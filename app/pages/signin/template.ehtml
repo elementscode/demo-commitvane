@@ -1,0 +1,126 @@
+import "./style.css";
+import { redirect } from "@elements/app";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+import { signin, homeFor, Role } from "#app/shared/services/auth";
+import { BrandMark } from "#app/shared/templates/layout/template";
+
+export interface DemoLogin {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+}
+
+interface SigninForm {
+  email: string;
+  password: string;
+  error: string;
+  busy: boolean;
+}
+
+export const DEMO_PASSWORD = "forecast";
+
+function onSubmit(form: SigninForm) {
+  form.busy = true;
+
+  try {
+    let role = signin(form.email, form.password);
+    form.error = "";
+    redirect(homeFor(role));
+  } catch (err: any) {
+    form.error = err.message;
+    form.busy = false;
+  }
+}
+
+function onPick(form: SigninForm, login: DemoLogin) {
+  form.email = login.email;
+  form.password = DEMO_PASSWORD;
+  onSubmit(form);
+}
+
+<html lang="en" class="page-signin" (
+  logins: DemoLogin[],
+  private form: SigninForm = { email: "", password: "", error: "", busy: false },
+)>
+  <head>
+    <title>Sign in · commitvane</title>
+    <meta name="description" content="Sales forecasting for the team">
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <main class="signin-main">
+      <div class="signin-grid">
+        <div class="card">
+          <div class="card-body">
+            <form class="stack is-lg" onsubmit={() => onSubmit(form)}>
+              <div class="stack is-xs">
+                <div class="signin-brand row">
+                  <BrandMark />
+                  commitvane
+                </div>
+                <p class="signin-lede">The weekly call, and what the deals say.</p>
+              </div>
+
+              <p e:if={form.error} class="signin-error" role="alert">{form.error}</p>
+
+              <div class="field">
+                <label for="email">Email</label>
+                <input id="email"
+                       name="email"
+                       type="email"
+                       value={form.email}
+                       autocomplete="email"
+                       autocapitalize="none"
+                       spellcheck={false}
+                       placeholder="you@company.com"
+                       required>
+              </div>
+
+              <div class="field">
+                <label for="password">Password</label>
+                <input id="password"
+                       name="password"
+                       type="password"
+                       value={form.password}
+                       autocomplete="current-password"
+                       required>
+              </div>
+
+              <button type="submit" class="is-primary is-block" disabled={form.busy}>Sign in</button>
+            </form>
+          </div>
+        </div>
+
+        <section class="demo-logins card" e:if={logins.length > 0}>
+          <div class="card-body stack">
+            <div class="stack is-xs">
+              <h2>Demo logins</h2>
+              <p class="signin-lede">Every account's password is <code>{DEMO_PASSWORD}</code>. Pick one to sign in.</p>
+            </div>
+
+            <p class="demo-group">Managers</p>
+            <div class="demo-list">
+              <button type="button" class="demo-login"
+                      e:for={login of logins.filter((l) => l.role === "manager")}
+                      onclick={() => onPick(form, login)}>
+                <span class="demo-login-name">{login.name}</span>
+                <span class="demo-login-email">{login.email}</span>
+              </button>
+            </div>
+
+            <p class="demo-group">Reps</p>
+            <div class="demo-list">
+              <button type="button" class="demo-login"
+                      e:for={login of logins.filter((l) => l.role === "rep")}
+                      onclick={() => onPick(form, login)}>
+                <span class="demo-login-name">{login.name}</span>
+                <span class="demo-login-email">{login.email}</span>
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>

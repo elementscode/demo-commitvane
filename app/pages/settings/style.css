@@ -1,0 +1,61 @@
+@import "#app/shared/styles/page.css";
+@import "#app/shared/styles/forecast.css";
+
+.page-settings body {
+  background: var(--bg-canvas);
+}
+
+.settings-main {
+  padding-block: var(--space-8) var(--space-16);
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.settings-table td {
+  vertical-align: middle;
+}
+
+.settings-input {
+  width: 9rem;
+  margin-left: auto;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.settings-input.is-pct {
+  width: 5.5rem;
+}
+
+.settings-status {
+  width: 4.5rem;
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.settings-status .is-saved {
+  color: var(--success-ink);
+}
+
+.settings-status .is-error {
+  color: var(--danger-ink);
+}
+
+.settings-grid .card-head select {
+  width: auto;
+}
+
+.quota-total td {
+  font-weight: var(--weight-semibold);
+  border-top: 1px solid var(--rule);
+}
+
+@media (max-width: 56rem) {
+  .settings-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

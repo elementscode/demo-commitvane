@@ -1,0 +1,47 @@
+import "./style.css";
+import { money, moneyShort, percent } from "#app/shared/format";
+
+export interface Totals {
+  quota: number;
+  closed: number;
+  commit: number;
+  bestCase: number;
+  pipeline: number;
+  weighted: number;
+}
+
+<ForecastStats (numbers: Totals)>
+  <div class="stats">
+    <div class="stat">
+      <span class="stat-label">Quota</span>
+      <span class="stat-value">{moneyShort(numbers.quota)}</span>
+      <span class="stat-note">{money(numbers.quota)}</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Closed won</span>
+      <span class="stat-value">{moneyShort(numbers.closed)}</span>
+      <meter value={numbers.quota ? numbers.closed / numbers.quota : 0} low="0.5" high="0.9" optimum="1"></meter>
+      <span class="stat-note">{percent(numbers.closed, numbers.quota)} of quota</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Commit</span>
+      <span class="stat-value">{moneyShort(numbers.commit)}</span>
+      <span class="stat-note">{moneyShort(numbers.closed + numbers.commit)} with closed</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Best case</span>
+      <span class="stat-value">{moneyShort(numbers.bestCase)}</span>
+      <span class="stat-note">{moneyShort(numbers.closed + numbers.commit + numbers.bestCase)} with commit</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Pipeline</span>
+      <span class="stat-value">{moneyShort(numbers.pipeline)}</span>
+      <span class="stat-note">not in the forecast</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Weighted</span>
+      <span class="stat-value">{moneyShort(numbers.weighted)}</span>
+      <span class="stat-note">amount × stage probability</span>
+    </div>
+  </div>
+</ForecastStats>

@@ -1,0 +1,157 @@
+@import "#app/shared/styles/page.css";
+@import "#app/shared/styles/forecast.css";
+
+.page-deals body {
+  background: var(--bg-canvas);
+}
+
+.deals-main {
+  padding-block: var(--space-8) var(--space-16);
+}
+
+.deals-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20rem;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.deals-table td {
+  vertical-align: middle;
+}
+
+.deal-account {
+  font-weight: var(--weight-medium);
+  color: var(--ink);
+}
+
+.deal-name {
+  font-size: var(--text-xs);
+  color: var(--ink-soft);
+}
+
+.deal-amount {
+  width: 8.5rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.deal-date {
+  width: 10rem;
+}
+
+.deal-category {
+  width: 8.5rem;
+}
+
+.deal-flag {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--warning-ink);
+}
+
+.deal-row.is-saving {
+  opacity: var(--opacity-muted);
+}
+
+.deal-row.is-error td {
+  background: var(--danger-soft);
+}
+
+.row-error {
+  font-size: var(--text-xs);
+  color: var(--danger-ink);
+}
+
+.call-card {
+  position: sticky;
+  top: var(--space-4);
+}
+
+.call-deals {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-1) var(--space-3);
+  font-size: var(--text-sm);
+  padding: var(--space-3);
+  background: var(--bg-soft);
+  border-radius: var(--radius-md);
+}
+
+.call-deals dt {
+  color: var(--ink-soft);
+}
+
+.call-deals dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--weight-medium);
+}
+
+.call-done {
+  font-size: var(--text-sm);
+  color: var(--success-ink);
+}
+
+.stage-prob {
+  color: var(--ink-soft);
+  font-size: var(--text-xs);
+}
+
+@media (max-width: 64rem) {
+  .deals-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .call-card {
+    position: static;
+    order: -1;
+  }
+}
+
+@media (max-width: 40rem) {
+  .deals-table thead {
+    display: none;
+  }
+
+  .deals-table,
+  .deals-table tbody,
+  .deals-table tr,
+  .deals-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .deals-table tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+    padding: var(--space-3) 0;
+    border-top: 1px solid var(--rule-soft);
+  }
+
+  .deals-table td {
+    padding: 0;
+    border: 0;
+  }
+
+  .deals-table td:nth-child(2) {
+    text-align: right;
+  }
+
+  .deals-table td.deal-cell-category:nth-child(5) {
+    grid-column: 1 / -1;
+  }
+
+  .deal-amount,
+  .deal-date,
+  .deal-category {
+    width: 100%;
+  }
+
+  .deals-table td.num {
+    text-align: left;
+  }
+}
