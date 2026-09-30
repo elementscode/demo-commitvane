@@ -1,0 +1,42 @@
+import "./style.css";
+import { redirect } from "@elements/app";
+import { signout, Role } from "#app/shared/services/auth";
+
+function onSignout() {
+  signout();
+  redirect("/signin");
+}
+
+<BrandMark>
+  <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
+    <rect width="24" height="24" rx="5" fill="currentColor"/>
+    <path d="M5 16 L10 11 L13 14 L19 7" stroke="#ffffff" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path d="M15 7 H19 V11" stroke="#ffffff" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </svg>
+</BrandMark>
+
+<AppHeader (name: string, role: Role, current: string)>
+  <header class="app-header">
+    <div class="app-header-inner page-shell is-wide row">
+      <a href="/" class="brand row">
+        <BrandMark />
+        commitvane
+      </a>
+
+      <nav class="app-nav cluster is-lg" e:if={role === "manager"}>
+        <a href="/dashboard" class={[current === "dashboard" && "is-active"]}>Dashboard</a>
+        <a href="/settings" class={[current === "settings" && "is-active"]}>Quotas &amp; stages</a>
+      </nav>
+
+      <nav class="app-nav cluster is-lg" e:else>
+        <a href="/deals" class={[current === "deals" && "is-active"]}>My forecast</a>
+      </nav>
+
+      <div class="app-user row">
+        <span class="app-user-name">{name}</span>
+        <span class="pill">{role}</span>
+        <button class="is-ghost is-sm" onclick={() => onSignout()}>Sign out</button>
+      </div>
+    </div>
+  </header>
+</AppHeader>

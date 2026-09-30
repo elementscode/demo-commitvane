@@ -1,0 +1,232 @@
+import "./style.css";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+import { AppHeader } from "#app/shared/templates/layout/template";
+import { ForecastStats } from "#app/shared/templates/stats/template";
+import { CATEGORIES, CATEGORY_LABELS, money, quarterLabel, dayLabel, whenLabel, todayISO } from "#app/shared/format";
+import { updateDeal, submitCall, RepForecast, Deal, CallForm } from "./services";
+
+interface DealRow extends Deal {
+  saving?: boolean;
+  error?: string;
+}
+
+interface CallState extends CallForm {
+  error: string;
+  done: boolean;
+  busy: boolean;
+}
+
+function callDefaults(f: RepForecast): CallState {
+  let n = f.numbers;
+
+  return {
+    commit: n.callCommit ?? n.closed + n.commit,
+    bestCase: n.callBestCase ?? n.closed + n.commit + n.bestCase,
+    error: "",
+    done: false,
+    busy: false,
+  };
+}
+
+function onDealChange(forecast: { value: RepForecast }, deal: DealRow) {
+  deal.saving = true;
+  deal.error = "";
+
+  try {
+    forecast.value = updateDeal(deal.id, deal.amount, deal.closeDate, deal.category);
+  } catch (err: any) {
+    deal.saving = false;
+    deal.error = err.message;
+  }
+}
+
+function onCallSubmit(forecast: { value: RepForecast }, call: CallState) {
+  call.busy = true;
+  call.error = "";
+
+  try {
+    forecast.value = submitCall({ commit: call.commit, bestCase: call.bestCase });
+    call.done = true;
+  } catch (err: any) {
+    call.error = err.message;
+  }
+
+  call.busy = false;
+}
+
+function flagFor(deal: Deal, quarterEnd: string): string {
+  if (deal.closeDate > quarterEnd) {
+    return "Pushed past quarter end";
+  }
+
+  if (deal.closeDate < todayISO()) {
+    return "Close date has passed";
+  }
+
+  return "";
+}
+
+<html lang="en" class="page-deals" (
+  name: string,
+  initial: RepForecast,
+  private forecast: { value: RepForecast } = { value: initial },
+  private call: CallState = callDefaults(initial),
+)>
+  <head>
+    <title>My forecast · commitvane</title>
+    <meta name="description" content="Your deals and weekly call">
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <AppHeader {name} role="rep" current="deals" />
+
+    <main class="deals-main page-shell is-wide stack is-xl">
+      <div class="forecast-head row">
+        <div class="stack is-xs">
+          <h1>{name.split(" ")[0]}'s forecast</h1>
+          <p class="forecast-meta">{quarterLabel(forecast.value.quarter)} · quarter ends {dayLabel(forecast.value.quarterEnd)}</p>
+        </div>
+      </div>
+
+      <ForecastStats numbers={forecast.value.numbers} />
+
+      <div class="deals-layout">
+        <div class="stack is-xl">
+          <section class="card">
+            <div class="card-head">
+              <h2 class="section-title">Open deals</h2>
+              <span class="muted">{forecast.value.open.length} deals · changes save as you make them</span>
+            </div>
+            <div class="card-body table-scroll">
+              <table class="deals-table">
+                <thead>
+                  <tr>
+                    <th>Account</th>
+                    <th>Stage</th>
+                    <th class="num">Amount</th>
+                    <th>Close date</th>
+                    <th>Category</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr e:for={deal of forecast.value.open as DealRow[]}
+                      class={["deal-row", deal.saving && "is-saving", deal.error && "is-error"]}>
+                    <td class="deal-cell-account">
+                      <div class="deal-account">{deal.account}</div>
+                      <div class="deal-name">{deal.name}</div>
+                      <div e:if={deal.error} class="row-error" role="alert">{deal.error}</div>
+                    </td>
+                    <td>
+                      {deal.stage} <span class="stage-prob">{deal.probability}%</span>
+                    </td>
+                    <td class="num">
+                      <input class="deal-amount is-sm"
+                             type="number"
+                             min="0"
+                             step="1000"
+                             aria-label={`Amount for ${deal.account}`}
+                             value={deal.amount}
+                             onchange={() => onDealChange(forecast, deal)}>
+                    </td>
+                    <td>
+                      <input class="deal-date is-sm"
+                             type="date"
+                             aria-label={`Close date for ${deal.account}`}
+                             value={deal.closeDate}
+                             onchange={() => onDealChange(forecast, deal)}>
+                      <span e:if={flagFor(deal, forecast.value.quarterEnd)} class="deal-flag">
+                        {flagFor(deal, forecast.value.quarterEnd)}
+                      </span>
+                    </td>
+                    <td class="deal-cell-category">
+                      <select class="deal-category is-sm"
+                              aria-label={`Forecast category for ${deal.account}`}
+                              value={deal.category}
+                              onchange={() => onDealChange(forecast, deal)}>
+                        <option e:for={c of CATEGORIES} value={c}>{CATEGORY_LABELS[c]}</option>
+                      </select>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <p e:if={forecast.value.open.length === 0} class="muted">No open deals. Everything this quarter is closed.</p>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card-head">
+              <h2 class="section-title">Closed this quarter</h2>
+              <span class="muted">{money(forecast.value.numbers.closed)}</span>
+            </div>
+            <div class="card-body table-scroll">
+              <table class="deals-table">
+                <thead>
+                  <tr>
+                    <th>Account</th>
+                    <th>Closed</th>
+                    <th class="num">Amount</th>
+                    <th>Category</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr e:for={deal of forecast.value.closed as DealRow[]}
+                      class={["deal-row", deal.saving && "is-saving", deal.error && "is-error"]}>
+                    <td class="deal-cell-account">
+                      <div class="deal-account">{deal.account}</div>
+                      <div class="deal-name">{deal.name}</div>
+                    </td>
+                    <td>{dayLabel(deal.closeDate)}</td>
+                    <td class="num">{money(deal.amount)}</td>
+                    <td class="deal-cell-category">
+                      <select class="deal-category is-sm"
+                              aria-label={`Forecast category for ${deal.account}`}
+                              value={deal.category}
+                              onchange={() => onDealChange(forecast, deal)}>
+                        <option e:for={c of CATEGORIES} value={c}>{CATEGORY_LABELS[c]}</option>
+                      </select>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <p e:if={forecast.value.closed.length === 0} class="muted">Nothing closed yet this quarter.</p>
+            </div>
+          </section>
+        </div>
+
+        <aside class="call-card card">
+          <form class="card-body stack" onsubmit={() => onCallSubmit(forecast, call)}>
+            <div class="stack is-xs">
+              <h2 class="section-title">Weekly call</h2>
+              <p class="muted text-sm" e:if={forecast.value.numbers.calledAt}>
+                Last called {whenLabel(forecast.value.numbers.calledAt!)}
+              </p>
+              <p class="muted text-sm" e:else>You haven't called {quarterLabel(forecast.value.quarter)} yet.</p>
+            </div>
+
+            <dl class="call-deals">
+              <dt>Deals: closed + commit</dt>
+              <dd>{money(forecast.value.numbers.closed + forecast.value.numbers.commit)}</dd>
+              <dt>Deals: + best case</dt>
+              <dd>{money(forecast.value.numbers.closed + forecast.value.numbers.commit + forecast.value.numbers.bestCase)}</dd>
+            </dl>
+
+            <div class="field">
+              <label for="call-commit">Commit for the quarter</label>
+              <input id="call-commit" type="number" min="0" step="1000" value={call.commit} oninput={() => call.done = false} required>
+            </div>
+
+            <div class="field">
+              <label for="call-best">Best case for the quarter</label>
+              <input id="call-best" type="number" min="0" step="1000" value={call.bestCase} oninput={() => call.done = false} required>
+            </div>
+
+            <p e:if={call.error} class="row-error" role="alert">{call.error}</p>
+            <p e:if={call.done} class="call-done" role="status">Call submitted. Your manager sees it now.</p>
+
+            <button type="submit" class="is-primary is-block" disabled={call.busy}>Submit call</button>
+          </form>
+        </aside>
+      </div>
+    </main>
+  </body>
+</html>

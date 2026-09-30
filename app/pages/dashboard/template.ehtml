@@ -1,0 +1,279 @@
+import "./style.css";
+import type { Listener } from "@elements/app";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+import { AppHeader } from "#app/shared/templates/layout/template";
+import { ForecastStats } from "#app/shared/templates/stats/template";
+import { money, moneyShort, percent, quarterLabel, whenLabel } from "#app/shared/format";
+import type { ForecastChange, RepNumbers } from "#app/shared/services/forecast";
+import { fetchDashboard, Dashboard } from "./services";
+import { mountChart, unmountChart, refreshCharts, ChartKind } from "./charts";
+
+interface LiveState {
+  repId: string;
+  text: string;
+  at: number;
+}
+
+interface DashState {
+  data: Dashboard;
+  quarter: string;
+  live: LiveState;
+}
+
+interface Gap {
+  text: string;
+  className: string;
+}
+
+const CHANGE_TEXT: Record<ForecastChange["kind"], string> = {
+  deal: "updated a deal",
+  call: "submitted a call",
+  quota: "quota changed",
+  stage: "stage probabilities changed",
+  snapshot: "weekly snapshot taken",
+};
+
+function refresh(state: DashState) {
+  state.data = fetchDashboard(state.quarter);
+  refreshCharts(state.data);
+}
+
+function onChange(state: DashState, change: ForecastChange) {
+  refresh(state);
+
+  let rep = state.data.reps.find((r) => r.repId === change.repId);
+  let who = rep ? `${rep.name} ` : "";
+  let at = Date.now();
+
+  state.live = { repId: change.repId, text: `${who}${CHANGE_TEXT[change.kind]}`, at };
+
+  setTimeout(() => {
+    if (state.live.at === at) {
+      state.live.repId = "";
+    }
+  }, 2500);
+}
+
+function onQuarterChange(state: DashState) {
+  refresh(state);
+}
+
+function onChartInsert(kind: ChartKind, canvas: Element, state: DashState) {
+  mountChart(kind, canvas as HTMLCanvasElement, state.data);
+}
+
+/**
+ * Call minus what the deals add up to. Over means the rep is calling more
+ * than their deals support; under means they may be holding back.
+ */
+function gapFor(call: number | null, deals: number): Gap {
+  if (call === null) {
+    return { text: "no call", className: "pill" };
+  }
+
+  let gap = call - deals;
+  let share = deals ? Math.abs(gap) / deals : 1;
+
+  if (share < 0.03) {
+    return { text: "aligned", className: "pill is-success" };
+  }
+
+  if (gap > 0) {
+    return { text: `${moneyShort(gap)} over`, className: share >= 0.1 ? "pill is-danger" : "pill is-warning" };
+  }
+
+  return { text: `${moneyShort(-gap)} under`, className: "pill is-info" };
+}
+
+function dealsCommit(r: RepNumbers): number {
+  return r.closed + r.commit;
+}
+
+function dealsBestCase(r: RepNumbers): number {
+  return r.closed + r.commit + r.bestCase;
+}
+
+<html lang="en" class="page-dashboard" (
+  name: string,
+  initial: Dashboard,
+  changes: Listener<ForecastChange>,
+  private state: DashState = { data: initial, quarter: initial.quarter, live: { repId: "", text: "", at: 0 } },
+) oninit={() => changes.on("notify", (change) => onChange(state, change))}>
+  <head>
+    <title>Dashboard · commitvane</title>
+    <meta name="description" content="Team forecast for the quarter">
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <AppHeader {name} role="manager" current="dashboard" />
+
+    <main class="dashboard-main page-shell is-wide stack is-xl">
+      <div class="forecast-head row">
+        <div class="stack is-xs">
+          <h1>Team forecast</h1>
+          <p class="live-note" role="status" aria-live="polite">
+            <span e:if={state.live.text}>{state.live.text} · {whenLabel(new Date(state.live.at))}</span>
+            <span e:else>{state.data.team.calledThisWeek} of {state.data.reps.length} reps have called this week</span>
+          </p>
+        </div>
+
+        <div class="dashboard-controls row">
+          <span class="pill is-success"><span class="pill-dot"></span>Live</span>
+          <select aria-label="Quarter" value={state.quarter} onchange={() => onQuarterChange(state)}>
+            <option e:for={q of state.data.quarters} value={q}>{quarterLabel(q)}</option>
+          </select>
+        </div>
+      </div>
+
+      <ForecastStats numbers={state.data.team} />
+
+      <div class="charts">
+        <section class="card chart-card">
+          <div class="card-head">
+            <h2 class="section-title">Closed won against quota</h2>
+            <span class="muted">Cumulative by week, team quota {moneyShort(state.data.team.quota)}</span>
+          </div>
+          <div class="card-body">
+            <div class="chart-frame">
+              <canvas role="img"
+                      aria-label="Line chart of cumulative closed won by week against team quota"
+                      oninsert={(e) => onChartInsert("attainment", e.target, state)}
+                      onremove={() => unmountChart("attainment")}></canvas>
+            </div>
+          </div>
+        </section>
+
+        <section class="card chart-card">
+          <div class="card-head">
+            <h2 class="section-title">Team commit, week over week</h2>
+            <span class="muted">Monday snapshots, then right now</span>
+          </div>
+          <div class="card-body">
+            <div class="chart-frame">
+              <canvas role="img"
+                      aria-label="Line chart of team commit from deals and from calls by week"
+                      oninsert={(e) => onChartInsert("trend", e.target, state)}
+                      onremove={() => unmountChart("trend")}></canvas>
+            </div>
+          </div>
+        </section>
+
+        <section class="card chart-card is-wide">
+          <div class="card-head">
+            <h2 class="section-title">Forecast by category, per rep</h2>
+            <span class="muted">Stacked from most to least certain; the tick is each rep's quota</span>
+          </div>
+          <div class="card-body">
+            <div class="chart-frame">
+              <canvas role="img"
+                      aria-label="Stacked bar chart of each rep's closed, commit, best case and pipeline against quota"
+                      oninsert={(e) => onChartInsert("categories", e.target, state)}
+                      onremove={() => unmountChart("categories")}></canvas>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section class="card">
+        <div class="card-head">
+          <h2 class="section-title">Calls against deals</h2>
+          <span class="muted">Each rep's latest call next to what their deals add up to</span>
+        </div>
+        <div class="card-body table-scroll">
+          <table class="gap-table">
+            <thead>
+              <tr>
+                <th>Rep</th>
+                <th class="num">Called commit</th>
+                <th class="num">Deals: closed + commit</th>
+                <th class="num">Gap</th>
+                <th class="num">Called best case</th>
+                <th class="num">Deals: + best case</th>
+                <th class="num">Gap</th>
+                <th>Called</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr e:for={r of state.data.reps.map((r) => ({ ...r, id: r.repId }))}
+                  class={[state.live.repId === r.repId && "is-changed"]}>
+                <td class="rep-name">{r.name}</td>
+                <td class="num">{r.callCommit === null ? "–" : money(r.callCommit)}</td>
+                <td class="num">{money(dealsCommit(r))}</td>
+                <td class="gap-cell"><span class={gapFor(r.callCommit, dealsCommit(r)).className}>{gapFor(r.callCommit, dealsCommit(r)).text}</span></td>
+                <td class="num">{r.callBestCase === null ? "–" : money(r.callBestCase)}</td>
+                <td class="num">{money(dealsBestCase(r))}</td>
+                <td class="gap-cell"><span class={gapFor(r.callBestCase, dealsBestCase(r)).className}>{gapFor(r.callBestCase, dealsBestCase(r)).text}</span></td>
+                <td class="called-at">
+                  <span e:if={!r.calledAt}>not yet</span>
+                  <span e:elseif={r.calledThisWeek}>{whenLabel(r.calledAt!)}</span>
+                  <span e:else class="pill is-warning">last call {whenLabel(r.calledAt!)}</span>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td>Team</td>
+                <td class="num">{money(state.data.team.callCommit)}</td>
+                <td class="num">{money(state.data.team.closed + state.data.team.commit)}</td>
+                <td></td>
+                <td class="num">{money(state.data.team.callBestCase)}</td>
+                <td class="num">{money(state.data.team.closed + state.data.team.commit + state.data.team.bestCase)}</td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+          <p class="table-note">Over by 10% or more is red: the call leans on deals that aren't in commit. Blue means the deals support more than the rep called.</p>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2 class="section-title">By rep</h2>
+          <span class="muted">Weighted is amount × stage probability; closed counts in full</span>
+        </div>
+        <div class="card-body table-scroll">
+          <table class="reps-table">
+            <thead>
+              <tr>
+                <th>Rep</th>
+                <th class="num">Quota</th>
+                <th class="num">Closed won</th>
+                <th class="num">Attainment</th>
+                <th class="num">Commit</th>
+                <th class="num">Best case</th>
+                <th class="num">Pipeline</th>
+                <th class="num">Weighted</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr e:for={r of state.data.reps.map((r) => ({ ...r, id: r.repId }))}
+                  class={[state.live.repId === r.repId && "is-changed"]}>
+                <td class="rep-name">{r.name}</td>
+                <td class="num">{money(r.quota)}</td>
+                <td class="num">{money(r.closed)}</td>
+                <td class="num">{percent(r.closed, r.quota)}</td>
+                <td class="num">{money(r.commit)}</td>
+                <td class="num">{money(r.bestCase)}</td>
+                <td class="num">{money(r.pipeline)}</td>
+                <td class="num">{money(r.weighted)}</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td>Team</td>
+                <td class="num">{money(state.data.team.quota)}</td>
+                <td class="num">{money(state.data.team.closed)}</td>
+                <td class="num">{percent(state.data.team.closed, state.data.team.quota)}</td>
+                <td class="num">{money(state.data.team.commit)}</td>
+                <td class="num">{money(state.data.team.bestCase)}</td>
+                <td class="num">{money(state.data.team.pipeline)}</td>
+                <td class="num">{money(state.data.team.weighted)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
