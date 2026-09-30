@@ -1,12 +1,12 @@
-![Commitvane, a sales forecasting app built with Elements: the manager dashboard with closed won against quota by week, the team's commit week over week, and a stacked forecast by category for each of eight reps with quota ticks.](POSTER_URL)
+![Commitvane, a sales forecasting app built with Elements: the manager dashboard with quota, closed won, commit, best case, pipeline and weighted tiles, closed won against quota by week, and the team commit week over week against the called commit.](https://elements.dev/demos/01a0f3a0-0fbf-7be6-a019-a2b92ce0ed93/poster?v=48a3915ffb40)
 
 # Commitvane
 
 > A demo app built with [Elements](https://elements.dev).
 
-Reps update deals and submit weekly calls. Managers see quota, commit, best case and weighted pipeline per rep in live charts, with calls that outrun the deals flagged.
+Reps update deals and submit weekly calls. Managers track commit, best case and weighted pipeline against quota in live charts.
 
-**Demo:** [Commitvane](DEMO_URL)
+**Demo:** [Commitvane](https://elements.dev/demos/01a0f3a0-0fbf-7be6-a019-a2b92ce0ed93)
 
 ## Agent specs
 
