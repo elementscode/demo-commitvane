@@ -1,0 +1,145 @@
+import "./style.css";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+import { AppHeader } from "#app/shared/templates/layout/template";
+import { money, quarterLabel } from "#app/shared/format";
+import { fetchSettings, setQuota, setProbability, Settings, QuotaRow, StageRow } from "./services";
+
+function onQuotaChange(settings: { value: Settings }, row: QuotaRow) {
+  row.saved = false;
+  row.error = "";
+
+  try {
+    setQuota(row.repId, settings.value.quarter, row.amount);
+    row.amount = Number(row.amount);
+    row.saved = true;
+  } catch (err: any) {
+    row.error = err.message;
+  }
+}
+
+function onProbabilityChange(stage: StageRow) {
+  stage.saved = false;
+  stage.error = "";
+
+  try {
+    setProbability(stage.id, stage.probability);
+    stage.saved = true;
+  } catch (err: any) {
+    stage.error = err.message;
+  }
+}
+
+function onQuarterChange(settings: { value: Settings }, quarter: string) {
+  settings.value = fetchSettings(quarter);
+}
+
+function totalQuota(rows: QuotaRow[]): number {
+  return rows.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+}
+
+<html lang="en" class="page-settings" (
+  name: string,
+  initial: Settings,
+  private settings: { value: Settings } = { value: initial },
+  private picked: { quarter: string } = { quarter: initial.quarter },
+)>
+  <head>
+    <title>Quotas &amp; stages · commitvane</title>
+    <meta name="description" content="Quotas per rep and stage probabilities">
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <AppHeader {name} role="manager" current="settings" />
+
+    <main class="settings-main page-shell is-wide stack is-xl">
+      <div class="forecast-head row">
+        <div class="stack is-xs">
+          <h1>Quotas &amp; stages</h1>
+          <p class="forecast-meta">Changes save as you make them and show on the dashboard right away.</p>
+        </div>
+      </div>
+
+      <div class="settings-grid">
+        <section class="card">
+          <div class="card-head row">
+            <h2 class="section-title">Quotas</h2>
+            <select aria-label="Quarter" value={picked.quarter} onchange={() => onQuarterChange(settings, picked.quarter)}>
+              <option e:for={q of settings.value.quarters} value={q}>{quarterLabel(q)}</option>
+            </select>
+          </div>
+          <div class="card-body table-scroll">
+            <table class="settings-table">
+              <thead>
+                <tr>
+                  <th>Rep</th>
+                  <th class="num">Quota for {quarterLabel(settings.value.quarter)}</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr e:for={row of settings.value.quotas}>
+                  <td>{row.name}</td>
+                  <td class="num">
+                    <input class="settings-input is-sm"
+                           type="number"
+                           min="0"
+                           step="5000"
+                           aria-label={`Quota for ${row.name}`}
+                           value={row.amount}
+                           onchange={() => onQuotaChange(settings, row)}>
+                  </td>
+                  <td class="settings-status">
+                    <span e:if={row.error} class="is-error" role="alert">{row.error}</span>
+                    <span e:elseif={row.saved} class="is-saved">Saved</span>
+                  </td>
+                </tr>
+                <tr class="quota-total">
+                  <td>Team</td>
+                  <td class="num">{money(totalQuota(settings.value.quotas))}</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <h2 class="section-title">Stage probabilities</h2>
+            <span class="muted">Weighted forecast is amount × probability</span>
+          </div>
+          <div class="card-body">
+            <table class="settings-table">
+              <thead>
+                <tr>
+                  <th>Stage</th>
+                  <th class="num">Probability</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr e:for={stage of settings.value.stages}>
+                  <td>{stage.name}</td>
+                  <td class="num">
+                    <input class="settings-input is-pct is-sm"
+                           type="number"
+                           min="0"
+                           max="100"
+                           step="5"
+                           aria-label={`Probability for ${stage.name}`}
+                           value={stage.probability}
+                           onchange={() => onProbabilityChange(stage)}>
+                  </td>
+                  <td class="settings-status">
+                    <span e:if={stage.error} class="is-error" role="alert">{stage.error}</span>
+                    <span e:elseif={stage.saved} class="is-saved">Saved</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
