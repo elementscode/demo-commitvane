@@ -36,9 +36,13 @@ Commitvane needed rep and manager accounts, a dashboard that moves as reps edit 
 - **Forecast math in SQL.** `repNumbers` sums closed, commit, best case and pipeline per rep and weights each deal by its stage probability in one query, and `currentUserOrThrow` in `app/shared/services/auth.ts` gives reps and managers their own pages.
 - **Data from SQL files.** Two migrations define the schema and seed two managers, eight reps with quotas, sixty deals and eight weeks of snapshots and calls. The project server applied each one as soon as it was saved.
 
-### What the agent got from the tooling
+### What the project server gave the agent
 
-The agent ran 23 builds in 17 minutes, and every one passed. It checked its work after each edit and kept going. It read 34 manual pages as it reached each part, from `recipes/live-dashboard` and `html/events` to `jobs`, then wrote 18 tests, which found two calls tying on their timestamp and led to a tie-break on the id. In a real browser it moved a rep's deal to closed and submitted a call while the manager's dashboard updated, checked the charts in dark mode, and checked the deals and dashboard pages at phone width.
+The project server runs alongside the agent and answers as soon as a file is saved: it type-checks the templates, TypeScript and SQL, applies migrations and reruns the tests, so every question came back right away and the agent kept building.
+
+### What shipped
+
+The app type-checks with zero errors and all 18 tests pass. Every page was checked on desktop and phone before publishing, along with a rep's deal edit and weekly call arriving on an open dashboard, and the repo was installed fresh from GitHub and run before the demo went live.
 
 Start in `app/pages/dashboard/template.ehtml`.
 
