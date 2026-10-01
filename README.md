@@ -42,7 +42,7 @@ The project server runs alongside the agent and answers as soon as a file is sav
 
 ### What shipped
 
-The app type-checks with zero errors and all 18 tests pass. Every page was checked on desktop and phone before publishing, along with a rep's deal edit and weekly call arriving on an open dashboard.
+The app type-checks with zero errors and all 18 tests pass. Every page works on desktop and phone, and live updates arrive across sessions, such as a rep's deal edit or weekly call appearing on the manager's open dashboard.
 
 Start in `app/pages/dashboard/template.ehtml`.
 
