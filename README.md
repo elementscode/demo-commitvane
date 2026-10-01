@@ -38,7 +38,7 @@ Commitvane needed rep and manager accounts, a dashboard that moves as reps edit 
 
 ### What the agent got from the tooling
 
-The agent ran 23 builds in 17 minutes, and every one passed. By the build's own timer, the median build finished in 43 milliseconds, so it checked its work after each edit and kept going. It read 34 manual pages as it reached each part, from `recipes/live-dashboard` and `html/events` to `jobs`, then wrote 18 tests, which found two calls tying on their timestamp and led to a tie-break on the id. In a real browser it moved a rep's deal to closed and submitted a call while the manager's dashboard updated, checked the charts in dark mode, and checked the deals and dashboard pages at phone width.
+The agent ran 23 builds in 17 minutes, and every one passed. It checked its work after each edit and kept going. It read 34 manual pages as it reached each part, from `recipes/live-dashboard` and `html/events` to `jobs`, then wrote 18 tests, which found two calls tying on their timestamp and led to a tie-break on the id. In a real browser it moved a rep's deal to closed and submitted a call while the manager's dashboard updated, checked the charts in dark mode, and checked the deals and dashboard pages at phone width.
 
 Start in `app/pages/dashboard/template.ehtml`.
 
