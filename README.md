@@ -23,6 +23,25 @@ app.
 elements create commitvane -scaffold=elementscode/demo-commitvane
 ```
 
+## How it's built
+
+Commitvane needed rep and manager accounts, a dashboard that moves as reps edit deals and submit calls, charts drawn from live numbers, and a weekly snapshot job. Each of those is a part of Elements, so the agent spent its 17 minutes on the forecast math itself.
+
+### What Elements gave the app
+
+- **A live manager dashboard.** `forecastChannel` in `app/shared/services/forecast.ts` is a Channel that `updateDeal` and `submitCall` notify. The dashboard listens, re-reads through the `fetchDashboard` rpc, and its tiles, gap table and charts update within a second of a rep's edit.
+- **Charts on a lifecycle hook.** Each chart canvas in `app/pages/dashboard/template.ehtml` mounts from an `oninsert` handler, and `refreshCharts` in `charts.ts` redraws them when the numbers change. The charting package came in with `elements install`.
+- **Server calls as function calls.** Reps edit deals and submit calls, and managers set quotas and stage probabilities, through `@rpc` functions such as `updateDeal` and `setQuota` called straight from the page. Marking a deal closed moves it to the closed won stage in the same SQL update.
+- **A weekly job in one line.** `app.cron("every monday at 7am", ...)` in `index.ts` schedules `SnapshotForecastJob` in `app/jobs/snapshot-forecast.ts`, which records each rep's numbers under that week's Monday and replaces the row on a rerun.
+- **Forecast math in SQL.** `repNumbers` sums closed, commit, best case and pipeline per rep and weights each deal by its stage probability in one query, and `currentUserOrThrow` in `app/shared/services/auth.ts` gives reps and managers their own pages.
+- **Data from SQL files.** Two migrations define the schema and seed two managers, eight reps with quotas, sixty deals and eight weeks of snapshots and calls. The project server applied each one as soon as it was saved.
+
+### What the agent got from the tooling
+
+The agent ran 23 builds in 17 minutes, and every one passed. By the build's own timer, the median build finished in 43 milliseconds, so it checked its work after each edit and kept going. It read 34 manual pages as it reached each part, from `recipes/live-dashboard` and `html/events` to `jobs`, then wrote 18 tests, which found two calls tying on their timestamp and led to a tie-break on the id. In a real browser it moved a rep's deal to closed and submitted a call while the manager's dashboard updated, checked the charts in dark mode, and checked the deals and dashboard pages at phone width.
+
+Start in `app/pages/dashboard/template.ehtml`.
+
 ## Demo accounts
 
 The seed creates two managers and eight reps with quotas for the current
