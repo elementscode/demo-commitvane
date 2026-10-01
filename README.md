@@ -30,10 +30,15 @@ Commitvane needed rep and manager accounts, a dashboard that moves as reps edit 
 ### What Elements gave the app
 
 - **A live manager dashboard.** Deal edits and weekly calls notify a channel, and the manager's dashboard re-reads its numbers, so tiles, the call-versus-deals table and charts update within a second of a rep's change.
+
 - **Charts that redraw.** Each chart mounts when its canvas appears on the page and redraws when the numbers change. The charting package came in with `elements install`.
+
 - **Edits as function calls.** Reps update deals and submit weekly calls, and managers set quotas and stage probabilities, through `@rpc` functions called straight from the page. Marking a deal closed moves it to closed won in the same update.
+
 - **A weekly snapshot job.** A one-line cron schedule runs a job every Monday at 7am that records each rep's numbers for the week, so the week-over-week chart has history.
+
 - **Forecast math in SQL.** One query sums closed, commit, best case and pipeline per rep and weights each deal by its stage probability. Reps and managers each sign in to their own pages.
+
 - **Data from SQL files.** Migrations define the schema and seed two managers, eight reps with quotas, sixty deals, and eight weeks of snapshots and calls. The project server applied each one as soon as it was saved.
 
 ### What the project server gave the agent
