@@ -14,7 +14,6 @@
     --accent: var(--brand-600);
     --accent-deep: var(--brand-700);
     --accent-soft: var(--brand-50);
-    --accent-ink: #ffffff;
     --accent-edge: var(--brand-200);
     --link-c: 0.123;
     --link-h: 243;
@@ -41,8 +40,7 @@
   /* Phones: small controls keep a 40px tap target. */
   @media (max-width: 40rem) {
     :root {
-      --button-height-sm: var(--button-height);
-      --input-height-sm: var(--input-height);
+      --control-height-sm: var(--control-height-lg);
     }
   }
 }
