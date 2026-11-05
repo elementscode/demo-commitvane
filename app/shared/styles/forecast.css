@@ -87,3 +87,8 @@ th.num {
 .card-head .muted {
   font-size: var(--text-sm);
 }
+
+.num-input .number-input-input {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

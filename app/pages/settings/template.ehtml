@@ -2,30 +2,29 @@ import "./style.css";
 import favicon from "#app/shared/assets/favicons/favicon.svg";
 import { AppHeader } from "#app/shared/templates/layout/template";
 import { money, quarterLabel } from "#app/shared/format";
+import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardContent } from "@elements/ui/card";
+import { Table, TableHead, TableCell } from "@elements/ui/table";
+import { NativeSelect } from "@elements/ui/native-select";
+import { NumberInput } from "@elements/ui/number-input";
+import { Toaster, toast } from "@elements/ui/toast";
 import { fetchSettings, setQuota, setProbability, Settings, QuotaRow, StageRow } from "./services";
 
 function onQuotaChange(settings: { value: Settings }, row: QuotaRow) {
-  row.saved = false;
-  row.error = "";
-
   try {
     setQuota(row.repId, settings.value.quarter, row.amount);
     row.amount = Number(row.amount);
-    row.saved = true;
+    toast.success("Saved", { description: `${row.name}'s quota for ${quarterLabel(settings.value.quarter)}` });
   } catch (err: any) {
-    row.error = err.message;
+    toast.error(err.message, { description: row.name });
   }
 }
 
 function onProbabilityChange(stage: StageRow) {
-  stage.saved = false;
-  stage.error = "";
-
   try {
     setProbability(stage.id, stage.probability);
-    stage.saved = true;
+    toast.success("Saved", { description: `${stage.name} probability` });
   } catch (err: any) {
-    stage.error = err.message;
+    toast.error(err.message, { description: stage.name });
   }
 }
 
@@ -50,6 +49,7 @@ function totalQuota(rows: QuotaRow[]): number {
   </head>
   <body>
     <AppHeader {name} role="manager" current="settings" />
+    <Toaster richColors />
 
     <main class="settings-main page-shell is-wide stack is-xl">
       <div class="forecast-head row">
@@ -60,85 +60,87 @@ function totalQuota(rows: QuotaRow[]): number {
       </div>
 
       <div class="settings-grid">
-        <section class="card">
-          <div class="card-head row">
-            <h2 class="section-title">Quotas</h2>
-            <select aria-label="Quarter" value={picked.quarter} onchange={() => onQuarterChange(settings, picked.quarter)}>
-              <option e:for={q of settings.value.quarters} value={q}>{quarterLabel(q)}</option>
-            </select>
-          </div>
-          <div class="card-body table-scroll">
-            <table class="settings-table">
-              <thead>
-                <tr>
-                  <th>Rep</th>
-                  <th class="num">Quota for {quarterLabel(settings.value.quarter)}</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr e:for={row of settings.value.quotas}>
-                  <td>{row.name}</td>
-                  <td class="num">
-                    <input class="settings-input is-sm"
-                           type="number"
-                           min="0"
-                           step="5000"
-                           aria-label={`Quota for ${row.name}`}
-                           value={row.amount}
-                           onchange={() => onQuotaChange(settings, row)}>
-                  </td>
-                  <td class="settings-status">
-                    <span e:if={row.error} class="is-error" role="alert">{row.error}</span>
-                    <span e:elseif={row.saved} class="is-saved">Saved</span>
-                  </td>
-                </tr>
-                <tr class="quota-total">
-                  <td>Team</td>
-                  <td class="num">{money(totalQuota(settings.value.quotas))}</td>
-                  <td></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
+        <Card>
+          <CardHeader>
+            <CardTitle level={2}>Quotas</CardTitle>
+            <CardAction>
+              <NativeSelect value={picked.quarter}
+                            size="sm"
+                            attrs={{ "aria-label": "Quarter" }}
+                            options={settings.value.quarters.map((q) => ({ value: q, label: quarterLabel(q) }))}
+                            onchange={() => onQuarterChange(settings, picked.quarter)} />
+            </CardAction>
+          </CardHeader>
+          <CardContent>
+            <Table label="Quotas">
+              <table>
+                <thead>
+                  <tr>
+                    <TableHead>Rep</TableHead>
+                    <TableHead align="end">Quota for {quarterLabel(settings.value.quarter)}</TableHead>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr e:for={row of settings.value.quotas}>
+                    <TableCell>{row.name}</TableCell>
+                    <TableCell align="end">
+                      <NumberInput class="settings-input num-input"
+                                   value={row.amount}
+                                   min={0}
+                                   step={5000}
+                                   largeStep={50000}
+                                   size="sm"
+                                   buttons="none"
+                                   attrs={{ "aria-label": `Quota for ${row.name}` }}
+                                   onValueCommit={() => onQuotaChange(settings, row)} />
+                    </TableCell>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <TableCell>Team</TableCell>
+                    <TableCell align="end">{money(totalQuota(settings.value.quotas))}</TableCell>
+                  </tr>
+                </tfoot>
+              </table>
+            </Table>
+          </CardContent>
+        </Card>
 
-        <section class="card">
-          <div class="card-head">
-            <h2 class="section-title">Stage probabilities</h2>
-            <span class="muted">Weighted forecast is amount × probability</span>
-          </div>
-          <div class="card-body">
-            <table class="settings-table">
-              <thead>
-                <tr>
-                  <th>Stage</th>
-                  <th class="num">Probability</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr e:for={stage of settings.value.stages}>
-                  <td>{stage.name}</td>
-                  <td class="num">
-                    <input class="settings-input is-pct is-sm"
-                           type="number"
-                           min="0"
-                           max="100"
-                           step="5"
-                           aria-label={`Probability for ${stage.name}`}
-                           value={stage.probability}
-                           onchange={() => onProbabilityChange(stage)}>
-                  </td>
-                  <td class="settings-status">
-                    <span e:if={stage.error} class="is-error" role="alert">{stage.error}</span>
-                    <span e:elseif={stage.saved} class="is-saved">Saved</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
+        <Card>
+          <CardHeader>
+            <CardTitle level={2}>Stage probabilities</CardTitle>
+            <CardDescription>Weighted forecast is amount × probability</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table label="Stage probabilities">
+              <table>
+                <thead>
+                  <tr>
+                    <TableHead>Stage</TableHead>
+                    <TableHead align="end">Probability</TableHead>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr e:for={stage of settings.value.stages}>
+                    <TableCell>{stage.name}</TableCell>
+                    <TableCell align="end">
+                      <NumberInput class="settings-input is-pct num-input"
+                                   value={stage.probability}
+                                   min={0}
+                                   max={100}
+                                   step={5}
+                                   size="sm"
+                                   buttons="none"
+                                   attrs={{ "aria-label": `Probability for ${stage.name}` }}
+                                   onValueCommit={() => onProbabilityChange(stage)} />
+                    </TableCell>
+                  </tr>
+                </tbody>
+              </table>
+            </Table>
+          </CardContent>
+        </Card>
       </div>
     </main>
   </body>
