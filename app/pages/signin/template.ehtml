@@ -3,6 +3,11 @@ import { redirect } from "@elements/app";
 import favicon from "#app/shared/assets/favicons/favicon.svg";
 import { signin, homeFor, Role } from "#app/shared/services/auth";
 import { BrandMark } from "#app/shared/templates/layout/template";
+import { Card, CardContent } from "@elements/ui/card";
+import { Field, FieldGroup } from "@elements/ui/field";
+import { Input } from "@elements/ui/input";
+import { Button } from "@elements/ui/button";
+import { Alert } from "@elements/ui/alert";
 
 export interface DemoLogin {
   id: string;
@@ -51,8 +56,8 @@ function onPick(form: SigninForm, login: DemoLogin) {
   <body>
     <main class="signin-main">
       <div class="signin-grid">
-        <div class="card">
-          <div class="card-body">
+        <Card>
+          <CardContent>
             <form class="stack is-lg" onsubmit={() => onSubmit(form)}>
               <div class="stack is-xs">
                 <div class="signin-brand row">
@@ -62,38 +67,34 @@ function onPick(form: SigninForm, login: DemoLogin) {
                 <p class="signin-lede">The weekly call, and what the deals say.</p>
               </div>
 
-              <p e:if={form.error} class="signin-error" role="alert">{form.error}</p>
+              <Alert e:if={form.error} variant="danger" description={form.error} />
 
-              <div class="field">
-                <label for="email">Email</label>
-                <input id="email"
-                       name="email"
-                       type="email"
-                       value={form.email}
-                       autocomplete="email"
-                       autocapitalize="none"
-                       spellcheck={false}
-                       placeholder="you@company.com"
-                       required>
-              </div>
+              <FieldGroup>
+                <Field label="Email">
+                  <Input type="email"
+                         name="email"
+                         value={form.email}
+                         placeholder="you@company.com"
+                         required
+                         attrs={{ autocomplete: "email", autocapitalize: "none", spellcheck: "false" }} />
+                </Field>
 
-              <div class="field">
-                <label for="password">Password</label>
-                <input id="password"
-                       name="password"
-                       type="password"
-                       value={form.password}
-                       autocomplete="current-password"
-                       required>
-              </div>
+                <Field label="Password">
+                  <Input type="password"
+                         name="password"
+                         value={form.password}
+                         required
+                         attrs={{ autocomplete: "current-password" }} />
+                </Field>
+              </FieldGroup>
 
-              <button type="submit" class="is-primary is-block" disabled={form.busy}>Sign in</button>
+              <Button type="submit" variant="primary" block loading={form.busy}>Sign in</Button>
             </form>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        <section class="demo-logins card" e:if={logins.length > 0}>
-          <div class="card-body stack">
+        <Card class="demo-logins" e:if={logins.length > 0}>
+          <CardContent class="stack">
             <div class="stack is-xs">
               <h2>Demo logins</h2>
               <p class="signin-lede">Every account's password is <code>{DEMO_PASSWORD}</code>. Pick one to sign in.</p>
@@ -118,8 +119,8 @@ function onPick(form: SigninForm, login: DemoLogin) {
                 <span class="demo-login-email">{login.email}</span>
               </button>
             </div>
-          </div>
-        </section>
+          </CardContent>
+        </Card>
       </div>
     </main>
   </body>
