@@ -1,40 +1,6 @@
 @import "#app/shared/styles/page.css";
 @import "#app/shared/styles/forecast.css";
 
-.page-dashboard {
-  --viz-closed: #184f95;
-  --viz-commit: #2a78d6;
-  --viz-best-case: #5598e7;
-  --viz-pipeline: #86b6ef;
-  --viz-series-1: #2a78d6;
-  --viz-series-2: #eb6834;
-  --viz-reference: var(--ink-dim);
-  --viz-marker: var(--ink);
-  --viz-grid: var(--rule-soft);
-  --viz-axis: var(--ink-soft);
-  --viz-surface: var(--bg);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:where(:not([data-theme="light"])).page-dashboard {
-    --viz-closed: #b7d3f6;
-    --viz-commit: #6da7ec;
-    --viz-best-case: #3987e5;
-    --viz-pipeline: #1c5cab;
-    --viz-series-1: #3987e5;
-    --viz-series-2: #d95926;
-  }
-}
-
-:root[data-theme="dark"].page-dashboard {
-  --viz-closed: #b7d3f6;
-  --viz-commit: #6da7ec;
-  --viz-best-case: #3987e5;
-  --viz-pipeline: #1c5cab;
-  --viz-series-1: #3987e5;
-  --viz-series-2: #d95926;
-}
-
 .page-dashboard body {
   background: var(--bg-canvas);
 }
@@ -48,14 +14,9 @@
   flex-wrap: wrap;
 }
 
-.dashboard-controls select {
-  width: auto;
-}
-
 .live-note {
   font-size: var(--text-sm);
   color: var(--ink-soft);
-  min-height: 1.5em;
 }
 
 .charts {
@@ -64,49 +25,25 @@
   gap: var(--space-4);
 }
 
-.chart-card.is-wide {
+.charts > .is-wide {
   grid-column: 1 / -1;
 }
 
-.chart-card .card-head {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-0-5);
-}
-
 .chart-frame {
-  position: relative;
   height: 18rem;
+  aspect-ratio: auto;
 }
 
-.chart-card.is-wide .chart-frame {
+.chart-frame.is-tall {
   height: 20rem;
 }
 
-.gap-table td,
-.reps-table td {
-  vertical-align: middle;
-}
-
-.gap-table tbody tr,
-.reps-table tbody tr {
+.dash-table tbody tr {
   transition: background-color var(--duration-slow) var(--ease-out);
 }
 
-.gap-table tr.is-changed,
-.reps-table tr.is-changed {
+.dash-table tr.is-changed {
   background: var(--accent-soft);
-}
-
-.gap-table tfoot td,
-.reps-table tfoot td {
-  font-weight: var(--weight-semibold);
-  border-top: 1px solid var(--rule);
-}
-
-.gap-cell {
-  text-align: right;
-  white-space: nowrap;
 }
 
 .called-at {
