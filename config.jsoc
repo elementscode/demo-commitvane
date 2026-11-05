@@ -20,7 +20,6 @@
       "@elements/app": "local",
       "@elements/ui": "local",
       "@types/node": "latest",
-      "chart.js": "^4.5.1",
       "tslib": "latest",
     },
   },
@@ -54,7 +53,6 @@
   session: {
     expires: "30d",
   },
-
   // Lists the seeded logins on the sign-in page. Development only: the seed
   // migration never reaches production.
   demo: {
