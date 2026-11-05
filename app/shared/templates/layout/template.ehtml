@@ -1,5 +1,7 @@
 import "./style.css";
 import { redirect } from "@elements/app";
+import { Badge } from "@elements/ui/badge";
+import { Button } from "@elements/ui/button";
 import { signout, Role } from "#app/shared/services/auth";
 
 function onSignout() {
@@ -34,8 +36,8 @@ function onSignout() {
 
       <div class="app-user row">
         <span class="app-user-name">{name}</span>
-        <span class="pill">{role}</span>
-        <button class="is-ghost is-sm" onclick={() => onSignout()}>Sign out</button>
+        <Badge variant="secondary" class="app-user-role">{role}</Badge>
+        <Button variant="ghost" size="sm" onclick={() => onSignout()}>Sign out</Button>
       </div>
     </div>
   </header>

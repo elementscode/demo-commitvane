@@ -76,7 +76,7 @@
   }
 
   .app-user-name,
-  .app-user .pill {
+  .app-user-role {
     display: none;
   }
 }
