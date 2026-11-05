@@ -16,10 +16,6 @@
   align-items: start;
 }
 
-.deals-table td {
-  vertical-align: middle;
-}
-
 .deal-account {
   font-weight: var(--weight-medium);
   color: var(--ink);
@@ -32,8 +28,7 @@
 
 .deal-amount {
   width: 8.5rem;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
+  margin-left: auto;
 }
 
 .deal-date {
@@ -57,11 +52,6 @@
 
 .deal-row.is-error td {
   background: var(--danger-soft);
-}
-
-.row-error {
-  font-size: var(--text-xs);
-  color: var(--danger-ink);
 }
 
 .call-card {
@@ -88,11 +78,6 @@
   text-align: right;
   font-variant-numeric: tabular-nums;
   font-weight: var(--weight-medium);
-}
-
-.call-done {
-  font-size: var(--text-sm);
-  color: var(--success-ink);
 }
 
 .stage-prob {
