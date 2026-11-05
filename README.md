@@ -4,6 +4,8 @@
 
 > Commitvane is a full-stack app built with Claude Code on Elements.
 
+Commitvane uses the `dashboard` theme from @elements/ui.
+
 Reps update deals and submit weekly calls. Managers track commit, best case and weighted pipeline against quota in live charts.
 
 [Run this app on your machine](https://elements.dev/demos/01a0f3a0-0fbf-7be6-a019-a2b92ce0ed93). Use this demo as inspiration, or as the starting point for your own app. Your agent creates a new app with this one as the scaffold, and you prompt it to add whatever features you want.
