@@ -1,4 +1,4 @@
-/* Shared by the rep and manager pages: headings, stat tiles, number cells. */
+/* Shared by the rep and manager pages: headings, stat tiles, number inputs. */
 
 .forecast-head {
   justify-content: space-between;
@@ -61,20 +61,6 @@
   margin-top: var(--space-1);
 }
 
-.num {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-th.num {
-  text-align: right;
-}
-
-.table-scroll {
-  overflow-x: auto;
-}
-
 .section-title {
   font-size: var(--text-base);
   font-weight: var(--weight-semibold);
@@ -82,10 +68,6 @@ th.num {
 
 .muted {
   color: var(--ink-soft);
-}
-
-.card-head .muted {
-  font-size: var(--text-sm);
 }
 
 .num-input .number-input-input {
