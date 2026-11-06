@@ -36,7 +36,7 @@ function onSignout() {
 
       <div class="app-user row">
         <span class="app-user-name">{name}</span>
-        <Badge variant="outline" class="app-user-role">{role}</Badge>
+        <Badge variant="neutral" class="app-user-role">{role}</Badge>
         <Button variant="ghost" size="sm" onclick={() => onSignout()}>Sign out</Button>
       </div>
     </div>

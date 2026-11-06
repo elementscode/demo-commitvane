@@ -29,7 +29,7 @@ interface DashState {
   live: LiveState;
 }
 
-type GapVariant = "outline" | "success" | "warning" | "danger" | "info";
+type GapVariant = "neutral" | "success" | "warning" | "danger" | "info";
 
 interface Gap {
   text: string;
@@ -75,7 +75,7 @@ function onQuarterChange(state: DashState) {
  */
 function gapFor(call: number | null, deals: number): Gap {
   if (call === null) {
-    return { text: "no call", variant: "outline" };
+    return { text: "no call", variant: "neutral" };
   }
 
   let gap = call - deals;
