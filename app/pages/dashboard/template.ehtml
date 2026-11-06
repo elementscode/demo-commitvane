@@ -14,7 +14,7 @@ import { BarChart } from "@elements/ui/chart-bar";
 import { Toaster, toast } from "@elements/ui/toast";
 import { fetchDashboard, Dashboard } from "./services";
 import {
-  ATTAINMENT_CONFIG, TREND_CONFIG, CATEGORY_CONFIG, SERIES, moneyAxis, legend, tooltip, categoryTooltip,
+  ATTAINMENT_CONFIG, TREND_CONFIG, CATEGORY_CONFIG, SERIES, moneyAxis, legend, tooltip,
   attainmentRows, trendRows, categoryRows,
 } from "./charts";
 
@@ -145,6 +145,7 @@ function dealsBestCase(r: RepNumbers): number {
                        config={ATTAINMENT_CONFIG}
                        x="week"
                        curve="monotone"
+                       dots
                        valueAxis={moneyAxis}
                        {legend}
                        {tooltip}
@@ -163,6 +164,7 @@ function dealsBestCase(r: RepNumbers): number {
                        config={TREND_CONFIG}
                        x="week"
                        curve="monotone"
+                       dots
                        connectNulls
                        valueAxis={{ ...moneyAxis, domain: ["dataMin", "auto"] }}
                        {legend}
@@ -174,7 +176,7 @@ function dealsBestCase(r: RepNumbers): number {
         <Card class="is-wide">
           <CardHeader>
             <CardTitle level={2}>Forecast by category, per rep</CardTitle>
-            <CardDescription>Stacked from most to least certain; each rep's quota is in the tooltip</CardDescription>
+            <CardDescription>Stacked from most to least certain; the tick marks each rep's quota</CardDescription>
           </CardHeader>
           <CardContent>
             <BarChart class="chart-frame is-tall"
@@ -183,11 +185,12 @@ function dealsBestCase(r: RepNumbers): number {
                       x="rep"
                       series={SERIES}
                       stack="normal"
+                      targets="quota"
                       maxBarSize={48}
                       valueAxis={moneyAxis}
                       {legend}
-                      tooltip={categoryTooltip}
-                      label="Each rep's closed, commit, best case and pipeline" />
+                      {tooltip}
+                      label="Each rep's closed, commit, best case and pipeline against quota" />
           </CardContent>
         </Card>
       </div>

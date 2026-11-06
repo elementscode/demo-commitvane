@@ -8,9 +8,11 @@ export const CATEGORY_CONFIG: ChartConfig = {
   commit: { label: "Commit", theme: { light: "var(--brand-500)", dark: "var(--brand-400)" } },
   bestCase: { label: "Best case", theme: { light: "var(--brand-400)", dark: "var(--brand-500)" } },
   pipeline: { label: "Pipeline", theme: { light: "var(--brand-300)", dark: "var(--brand-700)" } },
+  quota: { label: "Quota", color: "var(--ink)" },
 };
 
-const QUOTA = { label: "Quota", color: "var(--ink-dim)", strokeDasharray: "6 4" };
+/** The quota is a dashed reference line with no dots. */
+const QUOTA = { label: "Quota", color: "var(--ink-dim)", strokeDasharray: "6 4", dots: false };
 
 export const ATTAINMENT_CONFIG: ChartConfig = {
   closed: { label: "Closed won", color: "var(--accent)" },
@@ -54,9 +56,3 @@ export function categoryRows(d: Dashboard) {
     quota: r.quota,
   }));
 }
-
-export const categoryTooltip = {
-  ...tooltip,
-  footerLabel: "Quota",
-  footer: (row: Record<string, unknown>) => money(Number(row.quota)),
-};
