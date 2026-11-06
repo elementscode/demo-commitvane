@@ -8,6 +8,7 @@ import { Field, FieldGroup } from "@elements/ui/field";
 import { Input } from "@elements/ui/input";
 import { Button } from "@elements/ui/button";
 import { Alert } from "@elements/ui/alert";
+import { ItemGroup, Item } from "@elements/ui/item";
 
 export interface DemoLogin {
   id: string;
@@ -101,24 +102,24 @@ function onPick(form: SigninForm, login: DemoLogin) {
             </div>
 
             <p class="demo-group">Managers</p>
-            <div class="demo-list">
-              <button type="button" class="demo-login"
-                      e:for={login of logins.filter((l) => l.role === "manager")}
-                      onclick={() => onPick(form, login)}>
-                <span class="demo-login-name">{login.name}</span>
-                <span class="demo-login-email">{login.email}</span>
-              </button>
-            </div>
+            <ItemGroup label="Managers" class="demo-list">
+              <Item e:for={login of logins.filter((l) => l.role === "manager")}
+                    variant="outline"
+                    size="xs"
+                    title={login.name}
+                    description={login.email}
+                    onclick={() => onPick(form, login)} />
+            </ItemGroup>
 
             <p class="demo-group">Reps</p>
-            <div class="demo-list">
-              <button type="button" class="demo-login"
-                      e:for={login of logins.filter((l) => l.role === "rep")}
-                      onclick={() => onPick(form, login)}>
-                <span class="demo-login-name">{login.name}</span>
-                <span class="demo-login-email">{login.email}</span>
-              </button>
-            </div>
+            <ItemGroup label="Reps" class="demo-list">
+              <Item e:for={login of logins.filter((l) => l.role === "rep")}
+                    variant="outline"
+                    size="xs"
+                    title={login.name}
+                    description={login.email}
+                    onclick={() => onPick(form, login)} />
+            </ItemGroup>
           </CardContent>
         </Card>
       </div>
